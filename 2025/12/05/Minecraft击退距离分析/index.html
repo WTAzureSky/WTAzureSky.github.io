@@ -20,25 +20,30 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"wtazuresky.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":true,"version":"8.26.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="随笔">
-<meta property="og:type" content="website">
-<meta property="og:title" content="我的个人博客">
-<meta property="og:url" content="https://wtazuresky.github.io/index.html">
+    <meta name="description" content="Minacraft 击退距离计算 之前出了一个视频，客户端是如何处理击退的，在这个文章中，尝试分析一下，在不同情况下，击退的具体距离是多少，尝试定量分析击退的距离 理论视频  1. 击退定义为了防止定义不准确，导致歧义的理解，本文一些概念的定义如下:  击退：实体被攻击后，它自身在空中运动的一整个过程 击退距离: 从击退开始到结束，实体的水平位移 击退大小: 生物被攻击时，服务器设置实体速度的大小">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Minecraft击退距离分析">
+<meta property="og:url" content="https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="我的个人博客">
-<meta property="og:description" content="随笔">
+<meta property="og:description" content="Minacraft 击退距离计算 之前出了一个视频，客户端是如何处理击退的，在这个文章中，尝试分析一下，在不同情况下，击退的具体距离是多少，尝试定量分析击退的距离 理论视频  1. 击退定义为了防止定义不准确，导致歧义的理解，本文一些概念的定义如下:  击退：实体被攻击后，它自身在空中运动的一整个过程 击退距离: 从击退开始到结束，实体的水平位移 击退大小: 生物被攻击时，服务器设置实体速度的大小">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/image.png">
+<meta property="og:image" content="https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/difmotion.png">
+<meta property="article:published_time" content="2025-12-05T01:48:24.000Z">
+<meta property="article:modified_time" content="2025-12-05T08:23:45.384Z">
 <meta property="article:author" content="WTAzureSky">
 <meta property="article:tag" content="博客,探索,编程,游戏">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/image.png">
 
 
-<link rel="canonical" href="https://wtazuresky.github.io/">
+<link rel="canonical" href="https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"zh-CN","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/","path":"2025/12/05/Minecraft击退距离分析/","title":"Minecraft击退距离分析"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>我的个人博客</title>
+<title>Minecraft击退距离分析 | 我的个人博客</title>
   
 
 
@@ -85,7 +90,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">我的个人博客</h1>
+      <p class="site-title">我的个人博客</p>
       <i class="logo-line"></i>
     </a>
       <p class="site-subtitle" itemprop="description">记录</p>
@@ -108,7 +113,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -121,6 +126,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Minacraft-%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E8%AE%A1%E7%AE%97"><span class="nav-number">1.</span> <span class="nav-text">Minacraft 击退距离计算</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%87%BB%E9%80%80%E5%AE%9A%E4%B9%89"><span class="nav-number">1.1.</span> <span class="nav-text">1. 击退定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E5%87%BB%E9%80%80%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">2. 最简单的击退分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%83%85%E6%99%AF"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 情景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%AE%A1%E7%AE%97%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.1 计算击退距离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%AE%A1%E7%AE%97"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.1 计算motionXZimotionXZ_{i}motionXZi​</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%B1%82%E5%92%8C"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.2 求和</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-20CPS%EF%BC%8Chold-W"><span class="nav-number">1.3.</span> <span class="nav-text">3. 20CPS，hold W</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%83%85%E6%99%AF-1"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 情景</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -150,16 +156,17 @@
 
     </div>
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
 
-    
+
+  
 
 
 <div class="post-block">
   
   
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wtazuresky.github.io/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -173,13 +180,13 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 我的个人博客">
+      <meta itemprop="name" content="Minecraft击退距离分析 | 我的个人博客">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Minecraft击退距离分析</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          Minecraft击退距离分析
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -202,8 +209,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="Minacraft-击退距离计算"><a href="#Minacraft-击退距离计算" class="headerlink" title="Minacraft 击退距离计算"></a>Minacraft 击退距离计算</h1><blockquote>
+    <div class="post-body" itemprop="articleBody"><h1 id="Minacraft-击退距离计算"><a href="#Minacraft-击退距离计算" class="headerlink" title="Minacraft 击退距离计算"></a>Minacraft 击退距离计算</h1><blockquote>
 <p>之前出了一个视频，客户端是如何处理击退的，在这个文章中，尝试分析一下，在不同情况下，击退的具体距离是多少，尝试定量分析击退的距离</p>
 <p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV164gMzAEkW">理论视频</a></p>
 </blockquote>
@@ -276,7 +282,6 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
 </ul>
 <p>&#x2F;&#x2F; 待完成</p>
 
-      
     </div>
 
     
@@ -284,155 +289,22 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/12/04/hexo/" rel="prev" title="hexo">
+                  <i class="fa fa-angle-left"></i> hexo
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
     </footer>
   </article>
 </div>
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wtazuresky.github.io/2025/12/04/hexo/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="WTAzureSky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="我的个人博客">
-      <meta itemprop="description" content="随笔">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 我的个人博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/12/04/hexo/" class="post-title-link" itemprop="url">hexo</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-12-04 22:51:54 / 修改时间：23:31:49" itemprop="dateCreated datePublished" datetime="2025-12-04T22:51:54+08:00">2025-12-04</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="简明-Hexo-使用教程"><a href="#简明-Hexo-使用教程" class="headerlink" title="简明 Hexo 使用教程"></a>简明 Hexo 使用教程</h1><blockquote>
-<p>这是一个面向初学者的快速入门指南，包含安装、常用命令、调试与部署要点。</p>
-</blockquote>
-<h2 id="1-前提"><a href="#1-前提" class="headerlink" title="1. 前提"></a>1. 前提</h2><ul>
-<li>Node.js：建议使用 LTS 版本（可从 <a target="_blank" rel="noopener" href="https://nodejs.org/">https://nodejs.org</a> 下载）。</li>
-<li>Git：用于部署到 GitHub Pages 或拉取主题。</li>
-</ul>
-<h2 id="2-安装-Hexo（全局）"><a href="#2-安装-Hexo（全局）" class="headerlink" title="2. 安装 Hexo（全局）"></a>2. 安装 Hexo（全局）</h2><p>在终端中运行：</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install <span class="literal">-g</span> hexo<span class="literal">-cli</span></span><br></pre></td></tr></table></figure>
-
-<p>如果你更喜欢局部安装，也可以在项目内使用 <code>npx hexo</code>。</p>
-<h2 id="3-新建博客或初始化已有目录"><a href="#3-新建博客或初始化已有目录" class="headerlink" title="3. 新建博客或初始化已有目录"></a>3. 新建博客或初始化已有目录</h2><ul>
-<li>新建一个新的 Hexo 项目（示例）：</li>
-</ul>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo init my<span class="literal">-blog</span></span><br><span class="line"><span class="built_in">cd</span> my<span class="literal">-blog</span></span><br><span class="line">npm install</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>如果你已经有现成仓库，进入仓库目录运行 <code>npm install</code> 即可。</li>
-</ul>
-<h2 id="4-创建文章"><a href="#4-创建文章" class="headerlink" title="4. 创建文章"></a>4. 创建文章</h2><ul>
-<li>新建一篇文章：</li>
-</ul>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new <span class="string">&quot;我的第一篇文章&quot;</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>新建页面：</li>
-</ul>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page <span class="string">&quot;about&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>创建后会在 <code>source/_posts/</code> 下生成对应的 Markdown 文件，编辑该文件撰写内容。</p>
-<h2 id="5-常用命令（本地预览与生成）"><a href="#5-常用命令（本地预览与生成）" class="headerlink" title="5. 常用命令（本地预览与生成）"></a>5. 常用命令（本地预览与生成）</h2><ul>
-<li>生成静态文件：</li>
-</ul>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo generate  <span class="comment"># 或 hexo g</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>启动本地服务器并自动生成：</li>
-</ul>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo server    <span class="comment"># 或 hexo s</span></span><br></pre></td></tr></table></figure>
-
-<p>然后打开 <code>http://localhost:4000</code> 查看效果。</p>
-<ul>
-<li>清理缓存与旧文件（遇到生成问题时有用）：</li>
-</ul>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br></pre></td></tr></table></figure>
-
-<h2 id="6-部署（示例：GitHub-Pages）"><a href="#6-部署（示例：GitHub-Pages）" class="headerlink" title="6. 部署（示例：GitHub Pages）"></a>6. 部署（示例：GitHub Pages）</h2><ol>
-<li>在 <code>_config.yml</code> 中配置 deploy 部分（或使用 <code>hexo-deployer-git</code>）：</li>
-</ol>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">	<span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">	<span class="attr">repo:</span> <span class="string">https://github.com/&lt;用户名&gt;/&lt;仓库名&gt;.git</span></span><br><span class="line">	<span class="attr">branch:</span> <span class="string">gh-pages</span></span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>安装 deploy 插件并部署：</li>
-</ol>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo<span class="literal">-deployer-git</span> <span class="literal">--save</span></span><br><span class="line">hexo generate</span><br><span class="line">hexo deploy  <span class="comment"># 或 hexo d</span></span><br></pre></td></tr></table></figure>
-
-<p>更多部署方式：FTP、Netlify、Vercel 等，按照各平台说明配置。</p>
-<h2 id="7-主题与插件"><a href="#7-主题与插件" class="headerlink" title="7. 主题与插件"></a>7. 主题与插件</h2><ul>
-<li>下载并切换主题：将主题放在 <code>themes/</code> 目录并在 <code>_config.yml</code> 中设置 <code>theme: 主题名</code>。</li>
-<li>安装插件：使用 <code>npm install &lt;包名&gt; --save</code> 并在 Hexo 或主题文档中按需配置。</li>
-</ul>
-<h2 id="8-常见问题与排查"><a href="#8-常见问题与排查" class="headerlink" title="8. 常见问题与排查"></a>8. 常见问题与排查</h2><ul>
-<li>页面生成为空：先运行 <code>hexo clean</code>，然后 <code>hexo g</code>，查看终端报错。</li>
-<li>主题样式缺失：确认已安装主题依赖并执行 <code>npm install</code>；检查主题的 <code>source</code>、<code>_config.yml</code> 配置。</li>
-<li>部署不上去：确认 <code>repo</code> 地址与 <code>branch</code> 配置正确，并具有推送权限。</li>
-</ul>
-<h2 id="9-进阶建议"><a href="#9-进阶建议" class="headerlink" title="9. 进阶建议"></a>9. 进阶建议</h2><ul>
-<li>使用 Git 管理源码，部署只放静态文件到 <code>gh-pages</code> 分支。</li>
-<li>在本地添加 CI（GitHub Actions）自动化 <code>hexo generate</code> + <code>hexo deploy</code>。</li>
-</ul>
-<h2 id="10-参考资源"><a href="#10-参考资源" class="headerlink" title="10. 参考资源"></a>10. 参考资源</h2><ul>
-<li>官方文档：<a target="_blank" rel="noopener" href="https://hexo.io/">https://hexo.io</a></li>
-<li>中文指南与社区主题：搜索主题仓库（例如 Hexo 主题 Next）</li>
-</ul>
-<hr>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
 
 
 
