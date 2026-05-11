@@ -142,7 +142,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -252,7 +252,7 @@
 </tr>
 <tr>
 <td align="left"><strong>Tick (<code>t</code>)</strong></td>
-<td align="left">游戏的时间单位，1 Tick &#x3D; 0.05秒。文中的时序以击退发生的瞬间为 <code>t = 0</code>。</td>
+<td align="left">游戏的时间单位，1 Tick = 0.05秒。文中的时序以击退发生的瞬间为 <code>t = 0</code>。</td>
 </tr>
 </tbody></table>
 <hr>
@@ -260,7 +260,7 @@
 <ul>
 <li><strong>玩家状态</strong>：完全静止，无任何移动输入。</li>
 <li><strong>击退参数</strong>：水平初速度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mn>0</mn></msub><mo>=</mo><mo>−</mo><mn>0.4</mn></mrow><annotation encoding="application/x-tex">M_0 = -0.4</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">0.4</span></span></span></span>。</li>
-<li><strong>过程</strong>：玩家在 0 tick 被击退作用，10 tick 回到地面。（tick &#x3D; 0,10时均在地面）</li>
+<li><strong>过程</strong>：玩家在 0 tick 被击退作用，10 tick 回到地面。（tick = 0,10时均在地面）</li>
 <li><strong>实验数据图</strong>：</li>
 </ul>
 <img src="/2025/12/05/Minecraft%E5%87%BB%E9%80%80%E8%B7%9D%E7%A6%BB%E5%88%86%E6%9E%90/nop.png" class="">
@@ -438,80 +438,10 @@ D = M_0 \sum_{i=0}^{9} \prod_{j=0}^{i-1} f_j + \sum_{k=0}^{9} I_k \sum_{i=k}^{9}
 <p>由于实际计算过于烦杂，这里提供Python程序求函数<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span></span>:</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算A的值（M0的系数）</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">calculateA</span>(<span class="params">f</span>):</span><br><span class="line">    n = <span class="number">10</span></span><br><span class="line">    A = <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">        product = <span class="number">1.0</span></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(i):</span><br><span class="line">            product *= f[j]</span><br><span class="line">        A += product</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> A</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算B的值（常数项）</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">calculateB</span>(<span class="params">f, I</span>):</span><br><span class="line">    n = <span class="number">10</span></span><br><span class="line">    B = <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">        B_k = <span class="number">0.0</span></span><br><span class="line">        <span class="comment"># 计算B_k = Σ_&#123;i=k&#125;^&#123;9&#125; Π_&#123;j=k&#125;^&#123;i-1&#125; f_j</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(k, n):</span><br><span class="line">            product = <span class="number">1.0</span></span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(k, i):</span><br><span class="line">                product *= f[j]</span><br><span class="line">            B_k += product</span><br><span class="line">        B += I[k] * B_k</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> B</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    M0 = -<span class="number">0.24</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 初始化列表</span></span><br><span class="line">    f = [<span class="number">0.91</span> * <span class="number">0.6</span> <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>)]</span><br><span class="line">    I = [<span class="number">0.02548</span> <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>)]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 修改第一个元素</span></span><br><span class="line">    f[<span class="number">0</span>] = <span class="number">0.546</span> * <span class="number">0.6</span></span><br><span class="line">    I[<span class="number">0</span>] = <span class="number">0.1274</span></span><br><span class="line"></span><br><span class="line">    A = calculateA(f)</span><br><span class="line">    B = calculateB(f, I)</span><br><span class="line">    D = A * M0 + B</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;数值公式: D = <span class="subst">&#123;A&#125;</span> × M + <span class="subst">&#123;B&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;代入 M = <span class="subst">&#123;M0&#125;</span> 计算：&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;击退距离 D = <span class="subst">&#123;D&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
 
-<p>以下，是通过脚本求得的一些距离公式参数:</p>
-<table>
-<thead>
-<tr>
-<th align="left">tick</th>
-<th align="left">A</th>
-<th align="left">B</th>
-<th align="left">D</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">0</td>
-<td align="left">4.47056</td>
-<td align="left">1.47996</td>
-<td align="left">-0.308264</td>
-</tr>
-<tr>
-<td align="left">1</td>
-<td align="left">3.08234</td>
-<td align="left">1.3031</td>
-<td align="left">0.0701655</td>
-</tr>
-<tr>
-<td align="left">2</td>
-<td align="left">2.38044</td>
-<td align="left">1.15909</td>
-<td align="left">0.20691</td>
-</tr>
-<tr>
-<td align="left">3</td>
-<td align="left">2.03085</td>
-<td align="left">1.03756</td>
-<td align="left">0.225219</td>
-</tr>
-<tr>
-<td align="left">4</td>
-<td align="left">1.86016</td>
-<td align="left">0.933692</td>
-<td align="left">0.189626</td>
-</tr>
-<tr>
-<td align="left">5</td>
-<td align="left">1.77908</td>
-<td align="left">0.845606</td>
-<td align="left">0.133974</td>
-</tr>
-<tr>
-<td align="left">6</td>
-<td align="left">1.74208</td>
-<td align="left">0.773022</td>
-<td align="left">0.0761913</td>
-</tr>
-<tr>
-<td align="left">7</td>
-<td align="left">1.72623</td>
-<td align="left">0.716549</td>
-<td align="left">0.0260559</td>
-</tr>
-<tr>
-<td align="left">8</td>
-<td align="left">1.7202</td>
-<td align="left">0.677326</td>
-<td align="left">-0.0107539</td>
-</tr>
-<tr>
-<td align="left">9</td>
-<td align="left">1.71847</td>
-<td align="left">0.656838</td>
-<td align="left">-0.0305512</td>
-</tr>
-</tbody></table>
+<p>以下，是通过脚本求得的一些距离公式参数:<br>|tick| A | B | D |<br>|:—|:—|:—|:—|<br>|0|4.47056|1.47996|-0.308264|<br>|1|3.08234|1.3031|0.0701655|<br>|2|2.38044|1.15909|0.20691|<br>|3|2.03085|1.03756|0.225219|<br>|4|1.86016|0.933692|0.189626|<br>|5|1.77908|0.845606|0.133974|<br>|6|1.74208|0.773022|0.0761913|<br>|7|1.72623|0.716549|0.0260559|<br>|8|1.7202|0.677326|-0.0107539|<br>|9|1.71847|0.656838|-0.0305512|</p>
 <ul>
-<li>tick &#x3D; 0 时，表示玩家不攻击</li>
-<li>tick &#x3D; i 时候， 表示玩家前i tick进行了攻击</li>
+<li>tick = 0 时，表示玩家不攻击</li>
+<li>tick = i 时候， 表示玩家前i tick进行了攻击</li>
 <li>此处的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mn>0</mn></msub><mo>=</mo><mo>−</mo><mn>0.4</mn></mrow><annotation encoding="application/x-tex">M_0 = -0.4</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">0.4</span></span></span></span></li>
 </ul>
 <hr>
@@ -535,10 +465,12 @@ D = M_0 \sum_{i=0}^{9} \prod_{j=0}^{i-1} f_j + \sum_{k=0}^{9} I_k \sum_{i=k}^{9}
 <p>通过上图，我们可以把情况大致分为2类:</p>
 <ol>
 <li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><msub><mi>M</mi><mn>0</mn></msub><mi mathvariant="normal">∣</mi><mo>&gt;</mo><mn>0.2</mn></mrow><annotation encoding="application/x-tex">|M_0| &gt; 0.2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0.2</span></span></span></span>:
- 这种情况下，我们几乎没有对x(开始没打到人)的容忍度，即使是1tick没有点击到，即使是最佳的4次点击，也会使得间隔点劣于不用管对刀节奏的连续点</li>
+<p> 这种情况下，我们几乎没有对x(开始没打到人)的容忍度，即使是1tick没有点击到，即使是最佳的4次点击，也会使得间隔点劣于不用管对刀节奏的连续点</p>
+</li>
 <li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><msub><mi>M</mi><mn>0</mn></msub><mi mathvariant="normal">∣</mi><mo>&lt;</mo><mn>0.2</mn></mrow><annotation encoding="application/x-tex">|M_0| &lt; 0.2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0.2</span></span></span></span>
 
- 这种情况下，无论多少x为多少，点击次数多少，间隔点总是优于连续点，但是一般来说，很少有服务器的<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><msub><mi>M</mi><mn>0</mn></msub><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">|M_0|</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span>会小于0.2,基本都在0.4以上（你可以利用前文的公式，直接算出服务器的<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">M_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>来验证</li>
+<p> 这种情况下，无论多少x为多少，点击次数多少，间隔点总是优于连续点，但是一般来说，很少有服务器的<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><msub><mi>M</mi><mn>0</mn></msub><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">|M_0|</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span>会小于0.2,基本都在0.4以上（你可以利用前文的公式，直接算出服务器的<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">M_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>来验证</p>
+</li>
 </ol>
 
     </div>
@@ -580,7 +512,7 @@ D = M_0 \sum_{i=0}^{9} \prod_{j=0}^{i-1} f_j + \sum_{k=0}^{9} I_k \sum_{i=k}^{9}
 
   <div class="copyright">
     &copy; 
-    <span itemprop="copyrightYear">2025</span>
+    <span itemprop="copyrightYear">2026</span>
     <span class="with-love">
       <i class="fa fa-heart"></i>
     </span>
