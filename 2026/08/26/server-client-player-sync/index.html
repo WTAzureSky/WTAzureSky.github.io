@@ -1,0 +1,1002 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#ffffff">
+  <meta name="author" content="WTAzureSky">
+  <meta name="keywords" content="博客,探索,编程,游戏">
+  
+    <meta name="description" content="Minecraft 里的“一个玩家”其实同时存在于几份状态中：自己的客户端有一份，服务器有一份，其他玩家的客户端也各自保存一份。 这些状态描述的是同一个人，却不一定处于同一个时刻。本文直接沿着 1.8.9 源码的执行顺序，解释玩家位置如何从客户端到服务器，再从服务器到其他客户端。 下面的源码都来自仓库中的 src&#x2F;minecraft&#x2F;net&#x2F;minecraft&#x2F;。文中的代码片段是对应原版逻辑的简化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Minecraft 1.8.9 的服务器与客户端玩家同步">
+<meta property="og:url" content="https://wtazuresky.github.io/2026/08/26/server-client-player-sync/index.html">
+<meta property="og:site_name" content="WTAzureSky">
+<meta property="og:description" content="Minecraft 里的“一个玩家”其实同时存在于几份状态中：自己的客户端有一份，服务器有一份，其他玩家的客户端也各自保存一份。 这些状态描述的是同一个人，却不一定处于同一个时刻。本文直接沿着 1.8.9 源码的执行顺序，解释玩家位置如何从客户端到服务器，再从服务器到其他客户端。 下面的源码都来自仓库中的 src&#x2F;minecraft&#x2F;net&#x2F;minecraft&#x2F;。文中的代码片段是对应原版逻辑的简化">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-26T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-26T14:06:13.563Z">
+<meta property="article:author" content="WTAzureSky">
+<meta property="article:tag" content="Minecraft">
+<meta property="article:tag" content="客户端">
+<meta property="article:tag" content="服务器">
+<meta property="article:tag" content="网络同步">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Minecraft 1.8.9 的服务器与客户端玩家同步 - WTAzureSky</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"wtazuresky.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha512-fHwaWebuwA7NSF5Qg/af4UeDx9XqUpYpOGgubo3yWu+b2IQR4UeQwbb42Ti7gVAjNtVoI/I9TEoYeu9omwcC6g==" crossorigin="anonymous" referrerpolicy="no-referrer" /><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>WTAzureSky</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Minecraft 1.8.9 的服务器与客户端玩家同步"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-26 13:00" pubdate>
+          2026年8月26日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          47 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Minecraft 1.8.9 的服务器与客户端玩家同步</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>Minecraft 里的“一个玩家”其实同时存在于几份状态中：自己的客户端有一份，服务器有一份，其他玩家的客户端也各自保存一份。</p>
+<p>这些状态描述的是同一个人，却不一定处于同一个时刻。本文直接沿着 1.8.9 源码的执行顺序，解释玩家位置如何从客户端到服务器，再从服务器到其他客户端。</p>
+<p>下面的源码都来自仓库中的 <code>src/minecraft/net/minecraft/</code>。文中的代码片段是对应原版逻辑的简化表示。</p>
+<h2 id="一、客户端先更新自己的玩家"><a href="#一、客户端先更新自己的玩家" class="headerlink" title="一、客户端先更新自己的玩家"></a>一、客户端先更新自己的玩家</h2><p><code>EntityPlayerSP</code> 是客户端里的本地玩家实体，负责读取输入、处理移动和更新自己在客户端世界中的位置。</p>
+<p>一个游戏 tick 是 1/20 秒。客户端每个 tick 都会推进一次本地玩家状态。和本文同步有关的顺序可以概括为：</p>
+<ol>
+<li>处理左键攻击；</li>
+<li>根据输入处理移动和跳跃；</li>
+<li>更新是否在地面等状态；</li>
+<li>在 tick 末尾，把需要同步的状态发给服务器。</li>
+</ol>
+<p>因此，按下 W 后，自己的画面会立即移动，不需要等待服务器回复。这是客户端预测：客户端先把操作表现出来，服务器随后检查结果是否合理。</p>
+<p>这里的“客户端先更新”不等于“客户端拥有最终权威”。客户端只负责即时体验，服务器仍然负责最终的规则判断。</p>
+<h2 id="二、客户端发送哪些消息"><a href="#二、客户端发送哪些消息" class="headerlink" title="二、客户端发送哪些消息"></a>二、客户端发送哪些消息</h2><p>客户端不会把所有状态塞进同一个包。位置、攻击和疾跑分别有不同的消息和发送时机。</p>
+<h3 id="位置状态：C03PacketPlayer"><a href="#位置状态：C03PacketPlayer" class="headerlink" title="位置状态：C03PacketPlayer"></a>位置状态：C03PacketPlayer</h3><p><code>C03PacketPlayer</code> 是玩家状态更新包。它有几个变体，可以携带：</p>
+<ul>
+<li>X、Y、Z 位置，类型是 double；</li>
+<li>Yaw、Pitch 视角；</li>
+<li>是否在地面。</li>
+</ul>
+<p>在 <code>EntityPlayerSP.onUpdateWalkingPlayer</code> 中，客户端会比较当前位置和上一次已经报告的位置。如果移动距离达到阈值，就发送带坐标的形式；如果只改变了视角，就发送带视角的形式；如果位置和视角都没有变化，也可以只发送 onGround。</p>
+<p>可以把这段选择逻辑简化成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">位置变了 + 视角变了 -&gt; 发送位置和视角<br>位置变了            -&gt; 发送位置<br>视角变了            -&gt; 发送视角<br>都没变              -&gt; 发送 onGround<br></code></pre></td></tr></table></figure>
+
+<p>客户端每 tick 发送一次玩家状态更新，但只有需要时才在包中携带完整 double 坐标。</p>
+<p>位置包没有速度字段。客户端不会告诉服务器“我的 XZ 速度是多少”或“我的 Y 速度是多少”。</p>
+<h3 id="攻击状态：C02PacketUseEntity"><a href="#攻击状态：C02PacketUseEntity" class="headerlink" title="攻击状态：C02PacketUseEntity"></a>攻击状态：C02PacketUseEntity</h3><p><code>PlayerControllerMP</code> 负责处理客户端的攻击动作。玩家按下左键并完成本地目标判断后，它会直接发送 <code>C02PacketUseEntity</code>。</p>
+<p>攻击包不会等到 tick 末尾再和位置包一起发送。按照客户端 tick 的实际顺序，它属于移动之前处理的即时动作。</p>
+<h3 id="疾跑状态：C0BPacketEntityAction"><a href="#疾跑状态：C0BPacketEntityAction" class="headerlink" title="疾跑状态：C0BPacketEntityAction"></a>疾跑状态：C0BPacketEntityAction</h3><p>疾跑由 <code>C0BPacketEntityAction</code> 同步。<code>EntityPlayerSP</code> 在 tick 末尾比较当前疾跑状态和上一份已经同步的状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">当前状态 != 已同步状态 -&gt; 发送 START_SPRINTING 或 STOP_SPRINTING<br>状态没有变化          -&gt; 不发送<br></code></pre></td></tr></table></figure>
+
+<p>服务器收到后，会直接切换服务器玩家的疾跑状态。因此，疾跑不是每 tick 重复上报，而是在状态发生变化时发送一次。</p>
+<h2 id="三、服务器怎样处理客户端消息"><a href="#三、服务器怎样处理客户端消息" class="headerlink" title="三、服务器怎样处理客户端消息"></a>三、服务器怎样处理客户端消息</h2><p><code>NetHandlerPlayServer</code> 是服务器端的连接处理器，负责接收一个客户端发来的网络包。包进入服务器线程后，基本按照到达顺序分别处理。</p>
+<h3 id="攻击包"><a href="#攻击包" class="headerlink" title="攻击包"></a>攻击包</h3><p>服务器收到 <code>C02PacketUseEntity</code> 后，会先找到目标，再检查距离和视线等条件。通过检查后才执行攻击。</p>
+<p>客户端发出攻击包，只表示客户端认为目标可以攻击；服务器仍会进行自己的验证。</p>
+<h3 id="疾跑包"><a href="#疾跑包" class="headerlink" title="疾跑包"></a>疾跑包</h3><p>服务器收到 <code>C0BPacketEntityAction</code> 后，直接修改服务器玩家实体的疾跑状态。之后服务器处理攻击和移动时，读取的是这份服务器状态，而不是客户端本地刚刚改变但还没同步到服务器的状态。</p>
+<h3 id="位置包"><a href="#位置包" class="headerlink" title="位置包"></a>位置包</h3><p>位置包会进入单独的验证流程。<code>NetHandlerPlayServer.processPlayer</code> 的主要步骤是：</p>
+<ol>
+<li>检查坐标是否为有效数字；</li>
+<li>计算客户端报告位置和服务器当前状态之间的位移；</li>
+<li>检查是否移动过快；</li>
+<li>检查移动后是否出现碰撞或位置错误；</li>
+<li>验证失败时，通过 <code>setPlayerLocation</code> 将玩家回到旧位置；</li>
+<li>验证通过后，将服务器玩家位置设置为客户端报告的位置。</li>
+</ol>
+<p>其中第 6 步可以简化成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">服务器先计算和检查<br>检查失败 -&gt; 回弹<br>检查通过 -&gt; 接受客户端报告的坐标<br></code></pre></td></tr></table></figure>
+
+<p>服务器不是无条件相信客户端，也不是完全按照自己的移动结果忽略客户端，而是把客户端坐标作为待验证的移动结果。</p>
+<h2 id="四、服务器不会接收客户端速度"><a href="#四、服务器不会接收客户端速度" class="headerlink" title="四、服务器不会接收客户端速度"></a>四、服务器不会接收客户端速度</h2><p><code>C03PacketPlayer</code> 只有位置、视角和 onGround，没有速度字段。服务器因此不会从网络包中得到客户端本地的完整运动状态。</p>
+<p>服务器中的玩家实体是 <code>EntityPlayerMP</code>。它也有自己的 <code>motionX</code>、<code>motionY</code>、<code>motionZ</code>，但这三个值属于服务器内部状态，和客户端本地的三个速度没有一一对应关系。</p>
+<p>普通移动时，服务器主要收到的是连续的位置报告：上一拍在哪里，这一拍报告在哪里。客户端如何通过输入、摩擦和本地物理得到这段位移，并不会以速度的形式上传。</p>
+<h3 id="服务器对跳跃的粗略推断"><a href="#服务器对跳跃的粗略推断" class="headerlink" title="服务器对跳跃的粗略推断"></a>服务器对跳跃的粗略推断</h3><p>处理位置包时，服务器会检查一个非常有限的条件：</p>
+<ul>
+<li>服务器上一状态认为玩家在地面；</li>
+<li>客户端这次报告自己不在地面；</li>
+<li>客户端报告的 Y 坐标比之前更高。</li>
+</ul>
+<p>源码中的判断可以简化为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">如果 server_on_ground<br>且 client_on_ground == false<br>且 client_y 上升<br>那么调用 jump()<br></code></pre></td></tr></table></figure>
+
+<p><code>jump()</code> 会把服务器玩家的初始 Y 速度设为 0.42。如果服务器认为玩家正在疾跑，<code>jump()</code> 还会根据朝向追加 XZ 水平速度。</p>
+<p>这不是客户端速度的同步，而是服务器根据客户端上报的结果做出的猜测。服务器并不知道玩家离开地面的真正原因，所以击退离地也可能满足这段条件。击退逻辑同样会在服务器侧直接修改玩家的 XYZ 速度。</p>
+<p>除了这些服务器自己的逻辑，客户端的 XYZ 速度不会被复制到服务器；两边的速度始终是两套彼此独立的状态。</p>
+<h2 id="五、服务器多久向其他客户端发送一次位置"><a href="#五、服务器多久向其他客户端发送一次位置" class="headerlink" title="五、服务器多久向其他客户端发送一次位置"></a>五、服务器多久向其他客户端发送一次位置</h2><p><code>EntityTracker</code> 负责把服务器实体登记为“需要被其他玩家观察的实体”。玩家实体在登记时使用的默认更新频率是 2 tick，也就是每两拍检查一次。</p>
+<p>真正决定是否发包的是 <code>EntityTrackerEntry</code>。它的判断可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">每次 tracker 更新：<br>    如果还没到 2 tick -&gt; 通常不检查位置<br>    到了 2 tick，或实体正在 airborne -&gt; 检查位置<br>    量化后位移足够大 -&gt; 发送位置包<br>    位移太小         -&gt; 这次不发送位置<br></code></pre></td></tr></table></figure>
+
+<p>玩家位置同步的实际规则是：</p>
+<ul>
+<li>玩家通常每 2 tick 检查一次同步；</li>
+<li>量化后移动太小时，检查也可能不发位置包；</li>
+<li>长时间没有位置更新时，会有周期性的强制更新；</li>
+<li>玩家被击退、进入空中状态时，可以绕过普通的 2 tick 间隔及时更新。</li>
+</ul>
+<h2 id="六、位置为什么是-1-32-格"><a href="#六、位置为什么是-1-32-格" class="headerlink" title="六、位置为什么是 1/32 格"></a>六、位置为什么是 1/32 格</h2><p>服务器内部的玩家位置仍然是 double。但 <code>EntityTrackerEntry</code> 准备发送位置时，会先把每个坐标转换到 1/32 格的整数网格：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">网络坐标 = floor(服务器坐标 × 32)<br></code></pre></td></tr></table></figure>
+
+<p>客户端收到后再除以 32：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">客户端目标位置 = 网络坐标 ÷ 32<br></code></pre></td></tr></table></figure>
+
+<p>例如，服务器内部位置是 2.90 格，网络坐标会被取整到 92，客户端还原后得到 2.875 格。</p>
+<p>这个过程有两个作用：</p>
+<ol>
+<li>相对移动包可以用较小的整数表示位移；</li>
+<li>网络同步不需要传输完整 double。</li>
+</ol>
+<p>代价是网络位置和服务器原始位置之间最多存在约 1/32 格的量化差异。</p>
+<h2 id="七、客户端收到位置后如何插值"><a href="#七、客户端收到位置后如何插值" class="headerlink" title="七、客户端收到位置后如何插值"></a>七、客户端收到位置后如何插值</h2><p>在普通玩家移动同步中，<code>NetHandlerPlayClient</code> 负责接收 <code>S15PacketEntityRelMove</code>。它完成两件事：</p>
+<ol>
+<li>把网络整数坐标还原成 1/32 格的位置；</li>
+<li>把这个位置交给远端玩家实体。</li>
+</ol>
+<p>远端玩家实体由 <code>EntityOtherPlayerMP</code> 表示。它不会收到消息后立刻把画面中的玩家移动到新坐标，而是保存三个状态：</p>
+<ul>
+<li>当前显示位置；</li>
+<li>网络消息给出的目标位置；</li>
+<li>剩余插值次数。</li>
+</ul>
+<p>收到普通移动消息时，客户端会把插值次数设为 3。<code>EntityOtherPlayerMP.onLivingUpdate</code> 随后每拍执行一次类似下面的逻辑：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">如果剩余次数 &gt; 0：<br>    当前显示位置 += (目标位置 - 当前显示位置) / 剩余次数<br>    剩余次数 -= 1<br></code></pre></td></tr></table></figure>
+
+<p>假设当前显示位置是 2.0，目标位置是 3.5，剩余 3 拍，那么三次更新会是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">第 1 拍：2.0 -&gt; 2.5   （2.0 + (3.5 - 2.0) / 3）<br>第 2 拍：2.5 -&gt; 3.0   （2.5 + (3.5 - 2.5) / 2）<br>第 3 拍：3.0 -&gt; 3.5   （3.0 + (3.5 - 3.0) / 1）<br></code></pre></td></tr></table></figure>
+
+<p>实际源码对 X、Y、Z 三个坐标分别执行相同的计算，同时还会对视角做类似的平滑处理。插值期间，远端实体的 <code>posX</code>、<code>posY</code>、<code>posZ</code> 是中间值，只有插值结束后才完全到达网络消息指定的目标。</p>
+<p>所以，服务器同步给客户端的坐标经历了三次变化：</p>
+<ol>
+<li>服务器内部的 double 位置；</li>
+<li>网络传输前量化到 1/32 格的位置；</li>
+<li>客户端收到后正在逐步靠近的插值位置。</li>
+</ol>
+<p>这三者不是同一个坐标。服务器发来的位置是插值目标，客户端画面中的远端玩家位置则是插值过程中的当前值。</p>
+<h2 id="八、完整算例：A-前进，B-收到并插值"><a href="#八、完整算例：A-前进，B-收到并插值" class="headerlink" title="八、完整算例：A 前进，B 收到并插值"></a>八、完整算例：A 前进，B 收到并插值</h2><p>下面用一个刻意简化的例子，把一条位置同步消息从 A 走到 B 的全过程串起来。为了只观察同步机制，假设 A 每个 tick 固定向 X 轴前进 0.20 格；实际游戏中的速度会受到输入、摩擦、跳跃和碰撞影响，但不会改变下面的同步步骤。</p>
+<p>假设条件：</p>
+<ul>
+<li>A 的初始位置是 <code>0.00</code>；</li>
+<li>A 到服务器的延迟是 1 tick；</li>
+<li>服务器到 B 的延迟是 1 tick；</li>
+<li>玩家追踪器每 2 tick 检查一次；</li>
+<li>B 的远端实体从显示位置 <code>0.00</code> 开始；</li>
+<li>每次收到位置更新，B 都执行 3 tick 插值。</li>
+</ul>
+<h3 id="1-A-在本地移动并上报"><a href="#1-A-在本地移动并上报" class="headerlink" title="1. A 在本地移动并上报"></a>1. A 在本地移动并上报</h3><p>A 的客户端先更新自己的位置，然后在 tick 末尾发送位置状态。这里使用的坐标是 double：</p>
+<table>
+<thead>
+<tr>
+<th align="right">A 客户端 tick</th>
+<th align="right">tick 结束位置</th>
+<th>发出的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td align="right">0.20</td>
+<td>C03 位置包，携带 <code>x=0.20</code></td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">0.40</td>
+<td>C03 位置包，携带 <code>x=0.40</code></td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">0.60</td>
+<td>C03 位置包，携带 <code>x=0.60</code></td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">0.80</td>
+<td>C03 位置包，携带 <code>x=0.80</code></td>
+</tr>
+</tbody></table>
+<p>这些位置包在 tick 末尾发出。由于 A 到服务器有 1 tick 延迟，服务器分别在自己的 tick 2、3、4、5 收到它们。</p>
+<h3 id="2-服务器接收、验证并保存"><a href="#2-服务器接收、验证并保存" class="headerlink" title="2. 服务器接收、验证并保存"></a>2. 服务器接收、验证并保存</h3><p>服务器收到 A 的位置包后，先检查坐标和位移是否合理。这个例子中的每次位移都是 0.20 格，假设全部通过检查。服务器保存的位置随后变为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">服务器 tick 2：0.20<br>服务器 tick 3：0.40<br>服务器 tick 4：0.60<br>服务器 tick 5：0.80<br></code></pre></td></tr></table></figure>
+
+<p>服务器保存的是 double，仍然保留 <code>0.20</code>、<code>0.40</code> 这样的原始数值。位置追踪器的检查节奏与收包节奏是两件事：即使服务器每 tick 收到位置，玩家追踪器仍按自己的 2 tick 周期检查。</p>
+<h3 id="3-第一次-tracker-检查：把-0-40-变成-0-375"><a href="#3-第一次-tracker-检查：把-0-40-变成-0-375" class="headerlink" title="3. 第一次 tracker 检查：把 0.40 变成 0.375"></a>3. 第一次 tracker 检查：把 0.40 变成 0.375</h3><p>假设第一次检查发生在服务器 tick 3。服务器此时准备同步的位置是 <code>0.40</code>，先转换为 1/32 格网格：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">floor(0.40 × 32) = floor(12.8) = 12<br>12 ÷ 32 = 0.375<br></code></pre></td></tr></table></figure>
+
+<p>服务器不会把 double <code>0.40</code> 直接发给 B，而是记录网格坐标 <code>12</code>，并发送一个相对移动值 <code>+12</code>。这个消息在服务器到 B 的网络中再等待 1 tick。</p>
+<h3 id="4-B-收到第一条位置更新"><a href="#4-B-收到第一条位置更新" class="headerlink" title="4. B 收到第一条位置更新"></a>4. B 收到第一条位置更新</h3><p>B 在自己的 tick 4 开始时收到这条消息。<code>NetHandlerPlayClient</code> 将相对值 <code>+12</code> 累加到 B 保存的网络坐标，得到 <code>12</code>，再除以 32，得到新的插值目标：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">目标位置 = 12 ÷ 32 = 0.375<br></code></pre></td></tr></table></figure>
+
+<p><code>EntityOtherPlayerMP</code> 不会把显示位置直接改成 0.375，而是把“当前显示位置”保留在 0.00，把“目标位置”设为 0.375，并把剩余插值次数设为 3。</p>
+<h3 id="5-B-的三次插值"><a href="#5-B-的三次插值" class="headerlink" title="5. B 的三次插值"></a>5. B 的三次插值</h3><p>B 每个 tick 会执行一次“向目标靠近”的计算。如果这三拍期间没有新的位置消息，结果如下：</p>
+<table>
+<thead>
+<tr>
+<th align="right">B tick</th>
+<th>计算</th>
+<th align="right">插值后显示位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">4</td>
+<td><code>0.000 + (0.375 - 0.000) / 3</code></td>
+<td align="right">0.125000</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td><code>0.125 + (0.375 - 0.125) / 2</code></td>
+<td align="right">0.250000</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td><code>0.250 + (0.375 - 0.250) / 1</code></td>
+<td align="right">0.375000</td>
+</tr>
+</tbody></table>
+<p>这三步说明了插值本身的计算方式。实际移动中，新的位置消息可能在三步完成前到达，并重新设置目标位置和剩余次数。</p>
+<h3 id="6-第二条更新在插值完成前到达"><a href="#6-第二条更新在插值完成前到达" class="headerlink" title="6. 第二条更新在插值完成前到达"></a>6. 第二条更新在插值完成前到达</h3><p>服务器 tick 5 又进行一次 2 tick 检查。此时服务器位置是 <code>0.80</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">floor(0.80 × 32) = floor(25.6) = 25<br></code></pre></td></tr></table></figure>
+
+<p>上一次已发送的网格坐标是 <code>12</code>，所以这次发送的相对移动值是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">25 - 12 = 13<br></code></pre></td></tr></table></figure>
+
+<p>B 在自己的 tick 6 开始时收到这条消息。此时第一条消息只完成了前两次插值，显示位置是 0.25。B 把网络坐标从 12 累加到 25：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">目标位置 = 25 ÷ 32 = 0.78125<br></code></pre></td></tr></table></figure>
+
+<p>如果这条消息到达时 B 的显示位置仍是 0.25，插值计数器会重新设置为 3，后续显示位置变为：</p>
+<table>
+<thead>
+<tr>
+<th align="right">B tick</th>
+<th>计算</th>
+<th align="right">插值后显示位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">6</td>
+<td><code>0.250 + (0.78125 - 0.250) / 3</code></td>
+<td align="right">0.427083</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td><code>0.427083 + (0.78125 - 0.427083) / 2</code></td>
+<td align="right">0.604167</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td><code>0.604167 + (0.78125 - 0.604167) / 1</code></td>
+<td align="right">0.781250</td>
+</tr>
+</tbody></table>
+<p>新的位置消息会重置插值目标和剩余次数，所以 B 不一定先完成上一次插值，再开始下一次。移动持续发生时，目标可能在旧插值结束前不断更新，画面位置就会一直追赶一个不断变化的目标。</p>
+<p>这个例子完整展示了四个不同的数值：A 客户端的 <code>0.80</code>、服务器内部的 <code>0.80</code>、网络网格中的 <code>25</code>，以及 B 在插值过程中的 <code>0.427083</code>。它们都在描述 A，却分别属于本地预测、服务器状态、网络坐标和远端显示四个阶段。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%B8%B8%E6%88%8F%E6%9C%BA%E5%88%B6/" class="category-chain-item">游戏机制</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Minecraft/" class="print-no-link">#Minecraft</a>
+      
+        <a href="/tags/%E5%AE%A2%E6%88%B7%E7%AB%AF/" class="print-no-link">#客户端</a>
+      
+        <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" class="print-no-link">#服务器</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5/" class="print-no-link">#网络同步</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Minecraft 1.8.9 的服务器与客户端玩家同步</div>
+      <div>https://wtazuresky.github.io/2026/08/26/server-client-player-sync/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>WTAzureSky</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月26日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/01/25/combos/" title="Minecraft 连击机制分析">
+                        <span class="hidden-mobile">Minecraft 连击机制分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      © 2025-2026 WTAzureSky
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
