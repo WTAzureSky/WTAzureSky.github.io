@@ -27,7 +27,7 @@
 <meta property="og:description" content="用数学模型分析网络同步延迟如何影响实时交互与攻击判定。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-12-16T11:35:28.000Z">
-<meta property="article:modified_time" content="2026-07-20T08:45:08.816Z">
+<meta property="article:modified_time" content="2026-08-27T05:07:43.283Z">
 <meta property="article:author" content="WTAzureSky">
 <meta property="article:tag" content="博客,探索,编程,游戏">
 <meta name="twitter:card" content="summary_large_image">
@@ -331,9 +331,10 @@
             
               <div class="markdown-body">
                 
-                <h1 id="延迟效应定量分析"><a href="#延迟效应定量分析" class="headerlink" title="延迟效应定量分析"></a>延迟效应定量分析</h1><blockquote>
-<p>本文施工中，不保证准确性！</p>
-</blockquote>
+                <h1 id="延迟效应定量分析"><a href="#延迟效应定量分析" class="headerlink" title="延迟效应定量分析"></a>延迟效应定量分析</h1><div class="note note-warning">
+            <p>本文已过时，是早期草稿。文中的模型、假设和结论可能不适用于当前的分析，请谨慎参考。</p> 
+          </div>
+
 <h2 id="1-背景与概念"><a href="#1-背景与概念" class="headerlink" title="1. 背景与概念"></a>1. 背景与概念</h2><p>在网络同步的实时应用中，由于数据传输存在固有延迟，不同客户端对同一事件的感知会出现差异。本文旨在定量分析这种延迟对双方交互（如攻击判定）产生的影响。</p>
 <h3 id="1-1-感知的定义"><a href="#1-1-感知的定义" class="headerlink" title="1.1 感知的定义"></a>1.1 感知的定义</h3><p>对于任意实体或现象 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">σ</span></span></span></span>，在客户端 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span> 的感知下记作 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>σ</mi><mover accent="true"><mi>x</mi><mo>^</mo></mover></msup></mrow><annotation encoding="application/x-tex">\sigma^{\hat{x}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord accent mtight"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-2.7em;"><span class="pstrut" style="height:2.7em;"></span><span class="mord mathnormal mtight">x</span></span><span style="top:-2.7em;"><span class="pstrut" style="height:2.7em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord mtight">^</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>。</p>
 <h3 id="1-2-符号说明"><a href="#1-2-符号说明" class="headerlink" title="1.2 符号说明"></a>1.2 符号说明</h3><table>
@@ -611,9 +612,9 @@ t_y = t_0
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/01/25/combos/" title="Minecraft 连击机制分析">
+                      <a href="/2026/08/26/server-client-player-sync/" title="Minecraft 1.8.9 的服务器与客户端玩家同步">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Minecraft 连击机制分析</span>
+                        <span class="hidden-mobile">Minecraft 1.8.9 的服务器与客户端玩家同步</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
