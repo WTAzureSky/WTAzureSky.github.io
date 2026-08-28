@@ -27,7 +27,7 @@
 <meta property="og:description" content="在 Minecraft 1.8.9 中，疾跑不是客户端和服务器共用的一枚开关。客户端有自己的疾跑状态，服务器有自己的疾跑状态，客户端还保存着一个“我最后一次告诉服务器的疾跑状态”。服务器改变状态后，又会通过实体元数据把结果发回客户端。 这些状态大多数时候会保持一致，但攻击会主动清除疾跑。要理解按住疾跑攻击、手动重置疾跑以及硬直期间重新同步，必须先把一个客户端 tick 和一个服务器 tick 按源">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-08-28T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-28T07:46:13.099Z">
+<meta property="article:modified_time" content="2026-08-28T10:31:59.426Z">
 <meta property="article:author" content="WTAzureSky">
 <meta property="article:tag" content="Minecraft">
 <meta property="article:tag" content="PvP">
@@ -290,7 +290,7 @@
         
         
         
-          67 分钟
+          66 分钟
         
       </span>
     
@@ -399,7 +399,7 @@
 <p>自动停止可以简化为：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">正在疾跑<br>且前进输入 &lt; 0.8<br>或发生水平碰撞<br>或食物不足<br>    -&gt; setSprinting(false)<br></code></pre></td></tr></table></figure>
 
-<p>双击 W 还使用 <code>sprintToggleTimer</code> 保存 7 tick 的再次按键窗口。仓库中的 <code>Sprint</code> 模块额外接入了自动开启逻辑，但它不是原版同步协议。</p>
+<p>双击 W 还使用 <code>sprintToggleTimer</code> 保存 7 tick 的再次按键窗口。</p>
 <h3 id="3-攻击先于移动，并在本地重置疾跑"><a href="#3-攻击先于移动，并在本地重置疾跑" class="headerlink" title="3. 攻击先于移动，并在本地重置疾跑"></a>3. 攻击先于移动，并在本地重置疾跑</h3><p><code>Minecraft.runTick</code> 处理左键时调用 <code>PlayerControllerMP.attackEntity</code>。它依次：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">发送 C02PacketUseEntity<br>调用本地玩家的 attackTargetEntityWithCurrentItem<br></code></pre></td></tr></table></figure>
 
